@@ -7,6 +7,7 @@ from rclpy.clock import Clock
 import time
 
 from .ZltechDrive.ZltechDrive import *
+from .DiffDriveKinematics.DiffDriveKinematics import *
 
 class DriveModbus(Node):
     def __init__(self):
@@ -18,11 +19,15 @@ class DriveModbus(Node):
         self.right_driver_ = ZltechDrive('/dev/ttyUSB0', 4)
         self.right_driver_.set_velocity(0)
 
+        # Initiate Kinematis
+        self.kinematics_ = DiffDriveKinematics(0.099, 0.22)
+
         # cmd vel subscriber & callback
         self.twist_sub_ = self.create_subscription(Twist, 'cmd_vel', self.twist_callback, 10)
         self.target_vel_ = [0, 0]
         self.prev_twist_t_ = time.time()
 
+        
     def twist_callback(self, msg):
         self.target_vel_ = [msg.linear.x, msg.angular.z]
         self.prev_twist_t_ = time.time()

@@ -1,11 +1,12 @@
 from setuptools import find_packages, setup
 
 package_name = 'ros2_rpi_diff_drive'
-zltechdrive = 'ros2_rpi_diff_drive/ZltechDrive'
+zltech_drive = 'ros2_rpi_diff_drive/ZltechDrive'
+diff_drive_kinematics = 'ros2_rpi_diff_drive/DiffDriveKinematics'
 setup(
     name=package_name,
     version='0.0.0',
-    packages=[package_name, zltechdrive],
+    packages=[package_name, zltech_drive, diff_drive_kinematics],
     data_files=[
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
