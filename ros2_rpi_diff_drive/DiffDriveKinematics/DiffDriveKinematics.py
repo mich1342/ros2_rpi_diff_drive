@@ -6,10 +6,10 @@ class DiffDriveKinematics():
         self.wheel_base_radius_ = wheel_base_radius
     
     def get_left_speed(self, linear_velocity, angular_velocity):
-        ((linear_velocity - (self.wheel_base_radius_ * angular_velocity)) * 1 * 60 / ((self.wheel_radius_) * 2 * math.pi))
+        return ((linear_velocity - (self.wheel_base_radius_ * angular_velocity)) * 1 * 60 / ((self.wheel_radius_) * 2 * math.pi))
     
     def get_right_speed(self, linear_velocity, angular_velocity):
-        ((linear_velocity + (self.wheel_base_radius_ * angular_velocity)) * 1 * 60 / ((self.wheel_radius_) * 2 * math.pi))
+        return ((linear_velocity + (self.wheel_base_radius_ * angular_velocity)) * 1 * 60 / ((self.wheel_radius_) * 2 * math.pi))
 
     def get_lin_vel(self, left_rpm, right_rpm):
         return ((left_rpm * C1 * self.wheel_radius_) + (right_rpm * C1 * self.wheel_radius_)) / 2.0

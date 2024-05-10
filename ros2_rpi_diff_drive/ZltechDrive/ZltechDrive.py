@@ -22,9 +22,9 @@ class ZltechDrive():
         # Velocity Mode
         self.drive_.write_register(0x2032, 0x08, 0, 6, False)
 
-    def set_velocity(self, TARGET):
+    def set_velocity(self, target):
         # Set 0 Velocity
-        self.drive_.write_register(0x203A, TARGET, 0, 6, True)
+        self.drive_.write_register(0x203A, int(target), 0, 6, True)
     
     def get_velocity(self):
         return self.drive_.read_register(0x202C, 1, 3, True)
