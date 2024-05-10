@@ -1,11 +1,11 @@
 from setuptools import find_packages, setup
 
 package_name = 'ros2_rpi_diff_drive'
-
+zltechdrive = 'ros2_rpi_diff_drive/ZltechDrive'
 setup(
     name=package_name,
     version='0.0.0',
-    packages=find_packages(exclude=['test']),
+    packages=[package_name, zltechdrive],
     data_files=[
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
