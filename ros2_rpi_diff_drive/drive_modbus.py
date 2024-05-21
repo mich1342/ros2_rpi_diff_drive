@@ -9,6 +9,8 @@ import time
 from .ZltechDrive.ZltechDrive import *
 from .DiffDriveKinematics.DiffDriveKinematics import *
 
+import gpiozero 
+
 class DriveModbus(Node):
     def __init__(self):
         super().__init__('drive_modbs')
@@ -41,17 +43,43 @@ class DriveModbus(Node):
         self.odom_y_pos_ = 0.0
         self.odom_heading_ = 0.0
 
-        self.prev_t_ = time.time()
+        self.emergency_state = False
+        self.i_start = gpiozero.Button(18)
+        self.i_selector = gpiozero.Button(23)
+        self.i_limit_switch = gpiozero.Button(24)
+        self.i_emergency = gpiozero.Button(16)
+        self.i_hard_reset = gpiozero.Button(20)
+        self.i_reset = gpiozero.Button(6)
+        self.i_input_1 = gpiozero.Button(13)
+        self.i_input_2 = gpiozero.Button(26)
+        self.i_input_3 = gpiozero.Button(21)
 
+        self.o_output_1 = gpiozero.LED(17)
+        self.o_output_2 = gpiozero.LED(27)
+        self.o_output_3 = gpiozero.LED(22)
+        self.o_output_4 = gpiozero.LED(5)      
+
+        self.i_start.when_pressed = self.release_emergency
+        
+        self.i_emergency.when_released = self.set_emergency
+        self.i_limit_switch.when_pressed = self.set_emergency
+
+        self.prev_t_ = time.time()
 
     def timer_callback(self):
         # Check timeout
-        if(time.time() - self.prev_twist_t_ > 1):
+        if(time.time() - self.prev_twist_t_ > 0.5):
             self.target_vel_ = [0,0]
 
-        # Send Velocity to Motors
+        # Calculate Velocity to Motors
         left_rpm = self.kinematics_.get_left_speed(self.target_vel_[0], self.target_vel_[1])
         right_rpm = self.kinematics_.get_right_speed(self.target_vel_[0], self.target_vel_[1])
+        
+        # Check Emergency State
+        if self.emergency_state or not(self.i_emergency.is_pressed) or self.i_limit_switch.is_pressed:
+            left_rpm = 0
+            right_rpm = 0
+
         self.left_driver_.set_velocity(-left_rpm)
         self.right_driver_.set_velocity(right_rpm)
 
@@ -132,7 +160,13 @@ class DriveModbus(Node):
         q[3] = sy * cp * cr - cy * sp * sr
 
         return q
+    def set_emergency(self):
+        self.emergency_state = True
+        print("emergency")
 
+    def release_emergency(self):
+        self.emergency_state = False
+        print("not emergency")
 
 def main(args=None):
     rclpy.init(args=args)
