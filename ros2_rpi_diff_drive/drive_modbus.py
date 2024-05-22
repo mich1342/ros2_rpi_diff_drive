@@ -2,6 +2,7 @@ import rclpy
 from rclpy.node import Node
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
+from std_msgs.msg import Int32
 
 from rclpy.clock import Clock
 import time
@@ -33,6 +34,8 @@ class DriveModbus(Node):
         self.timer_period_ = 0.33
         self.timer_ = self.create_timer(self.timer_period_, self.timer_callback)
 
+        self.timer_ = self.create_timer(1, self.light_callback)
+        self.light_publisher = self.create_publisher(Int32, 'talosbot1/light_status', 10)
         # Odometry publisher
         self.odom_msg_ = Odometry()
         self.odom_msg_.header.frame_id = "odom"
@@ -139,6 +142,27 @@ class DriveModbus(Node):
 
         self.prev_t_ = time.time()
 
+    def light_callback(self):
+        linear = self.target_vel_[0]
+        angular = self.target_vel_[1]
+
+        LINEAR_THRESHOLD = 0.02
+        ANGULAR_THRESHOLD = 0.01
+        msg = Int32()
+
+        if linear < LINEAR_THRESHOLD and abs(angular) < ANGULAR_THRESHOLD:
+            msg.data = 0
+            return
+        else:
+            if abs(angular) < ANGULAR_THRESHOLD:
+                msg.data = 10
+                return
+            else:
+                if angular > 0:
+                    msg.data = 30
+                else:
+                    msg.data = 40
+        
 
     def twist_callback(self, msg):
         self.target_vel_ = [msg.linear.x, msg.angular.z]
