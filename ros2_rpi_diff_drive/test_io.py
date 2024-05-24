@@ -20,6 +20,19 @@ def print_msg():
     print("Test")
 def main(args=None):
     i_start.when_pressed = print_msg
+    while(1):
+        print("ON")
+        o_output_1.on()
+        o_output_2.on()
+        o_output_3.on()
+        o_output_4.on()
+        time.sleep(10)
+        print("OFF")
+        o_output_1.off()
+        o_output_2.off()
+        o_output_3.off()
+        o_output_4.off()
+        time.sleep(10)
     signal.pause()
     
         

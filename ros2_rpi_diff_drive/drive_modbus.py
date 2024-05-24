@@ -150,18 +150,19 @@ class DriveModbus(Node):
         ANGULAR_THRESHOLD = 0.01
         msg = Int32()
 
-        if linear < LINEAR_THRESHOLD and abs(angular) < ANGULAR_THRESHOLD:
-            msg.data = 0
-            return
+        if abs(linear) < LINEAR_THRESHOLD and abs(angular) < ANGULAR_THRESHOLD:
+            msg.data = 10
         else:
             if abs(angular) < ANGULAR_THRESHOLD:
-                msg.data = 10
-                return
+                msg.data = 20
             else:
                 if angular > 0:
                     msg.data = 30
                 else:
                     msg.data = 40
+        if self.emergency_state:
+            msg.data = 0
+        self.light_publisher.publish(msg)
         
 
     def twist_callback(self, msg):
