@@ -34,7 +34,7 @@ class DriveModbus(Node):
         self.timer_period_ = 0.33
         self.timer_ = self.create_timer(self.timer_period_, self.timer_callback)
 
-        self.timer_ = self.create_timer(1, self.light_callback)
+        self.timer_ = self.create_timer(0.5, self.light_callback)
         self.light_publisher = self.create_publisher(Int32, 'talosbot1/light_status', 10)
         # Odometry publisher
         self.odom_msg_ = Odometry()
@@ -57,15 +57,18 @@ class DriveModbus(Node):
         self.i_input_2 = gpiozero.Button(26)
         self.i_input_3 = gpiozero.Button(21)
 
-        self.o_output_1 = gpiozero.LED(17)
-        self.o_output_2 = gpiozero.LED(27)
-        self.o_output_3 = gpiozero.LED(22)
-        self.o_output_4 = gpiozero.LED(5)      
+        self.o_output_1 = gpiozero.LED(27)
+        self.o_output_2 = gpiozero.LED(5)
+        self.o_output_3 = gpiozero.LED(17)
+        self.o_output_4 = gpiozero.LED(22)   
 
         self.i_start.when_pressed = self.release_emergency
         
         self.i_emergency.when_released = self.set_emergency
         self.i_limit_switch.when_pressed = self.set_emergency
+        
+        if not(self.i_emergency.is_pressed) or self.i_limit_switch.is_pressed:
+            self.set_emergency()
 
         self.prev_t_ = time.time()
 
@@ -162,6 +165,24 @@ class DriveModbus(Node):
                     msg.data = 40
         if self.emergency_state:
             msg.data = 0
+        
+        if msg.data == 0:
+            self.o_output_1.on()
+            self.o_output_2.off()
+            self.o_output_3.off()
+            self.o_output_4.off()
+        if msg.data > 10:
+            self.o_output_1.off()
+            self.o_output_2.off()
+            self.o_output_3.on()
+            self.o_output_4.off()
+        if msg.data == 10:
+            self.o_output_1.off()
+            self.o_output_2.off()
+            self.o_output_3.off()
+            self.o_output_4.off()
+        
+
         self.light_publisher.publish(msg)
         
 
@@ -190,8 +211,11 @@ class DriveModbus(Node):
         print("emergency")
 
     def release_emergency(self):
-        self.emergency_state = False
-        print("not emergency")
+        if not(self.i_emergency.is_pressed) or self.i_limit_switch.is_pressed:
+            self.set_emergency()
+        else:
+            self.emergency_state = False
+            print("not emergency")
 
 def main(args=None):
     rclpy.init(args=args)
