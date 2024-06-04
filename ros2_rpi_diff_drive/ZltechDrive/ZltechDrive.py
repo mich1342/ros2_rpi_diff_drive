@@ -30,11 +30,11 @@ class ZltechDrive():
         return self.drive_.read_register(0x202C, 1, 3, True)
     
     def get_voltage(self):
-        return self.drive_.read_register(0x2029, 1, 3, True)
+        return self.drive_.read_register(0x2029, 2, 3, False)
     
     def get_motor_temp(self):
-        return self.drive_.read_register(0x2026, 1, 3, True)
+        return self.drive_.read_register(0x2026, 1, 3, False)
     
     def get_driver_temp(self):
-        return self.drive_.read_register(0x2024, 1, 3, True)
+        return self.drive_.read_register(0x2024, 1, 3, False)
 

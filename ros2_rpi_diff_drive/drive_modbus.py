@@ -2,7 +2,7 @@ import rclpy
 from rclpy.node import Node
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
-from std_msgs.msg import Int32
+from std_msgs.msg import Int32, Float32
 
 from rclpy.clock import Clock
 import time
@@ -31,8 +31,16 @@ class DriveModbus(Node):
         self.prev_twist_t_ = time.time()
 
         # timer to publish and send velocity command
-        self.timer_period_ = 0.33
-        self.timer_ = self.create_timer(self.timer_period_, self.timer_callback)
+        self.timer_ = self.create_timer(0.33, self.timer_callback)
+
+        # timer to publish statistics data
+        self.timer_ = self.create_timer(5, self.statistics_callback)
+        self.voltage_pub_ = self.create_publisher(Float32, 'talosbot1/bus_voltage', 10)
+        self.left_motor_temp_pub_ = self.create_publisher(Float32, 'talosbot1/temperature/left_motor_temp', 10)
+        self.left_driver_temp_pub_ = self.create_publisher(Float32, 'talosbot1/temperature/left_driver_temp', 10)
+        self.right_motor_temp_pub_ = self.create_publisher(Float32, 'talosbot1/temperature/right_motor_temp', 10)
+        self.right_driver_temp_pub_ = self.create_publisher(Float32, 'talosbot1/temperature/right_driver_temp', 10)
+
 
         self.timer_ = self.create_timer(0.5, self.light_callback)
         self.light_publisher = self.create_publisher(Int32, 'talosbot1/light_status', 10)
@@ -71,6 +79,26 @@ class DriveModbus(Node):
             self.set_emergency()
 
         self.prev_t_ = time.time()
+
+    def statistics_callback(self):
+        msg_ = Float32()
+        
+        # Bus Voltage Publisher
+        left_voltage = float(self.left_driver_.get_voltage())
+        right_voltage = float(self.right_driver_.get_voltage())
+        msg_.data = (left_voltage + right_voltage) / 2
+        self.voltage_pub_.publish(msg_)
+
+        msg_.data = float(self.left_driver_.get_driver_temp())
+        self.left_motor_temp_pub_.publish(msg_)        
+        msg_.data = float(self.left_driver_.get_motor_temp())
+        self.left_driver_temp_pub_.publish(msg_)
+        msg_.data = float(self.right_driver_.get_driver_temp())
+        self.right_motor_temp_pub_.publish(msg_)
+        msg_.data = float(self.right_driver_.get_motor_temp())
+        self.right_driver_temp_pub_.publish(msg_)
+        
+
 
     def timer_callback(self):
         # Check timeout
