@@ -10,7 +10,11 @@ import time
 from .ZltechDrive.ZltechDrive import *
 from .DiffDriveKinematics.DiffDriveKinematics import *
 
+import requests
+
 import gpiozero 
+
+STATISTICS_API_ENDPOINT = "http://192.168.22.0:5050/api/robot_statistics/hardware"
 
 class DriveModbus(Node):
     def __init__(self):
@@ -34,7 +38,7 @@ class DriveModbus(Node):
         self.timer_ = self.create_timer(0.33, self.timer_callback)
 
         # timer to publish statistics data
-        self.timer_ = self.create_timer(5, self.statistics_callback)
+        self.timer_ = self.create_timer(90, self.statistics_callback)
         self.voltage_pub_ = self.create_publisher(Float32, 'talosbot1/bus_voltage', 10)
         self.left_motor_temp_pub_ = self.create_publisher(Float32, 'talosbot1/temperature/left_motor_temp', 10)
         self.left_driver_temp_pub_ = self.create_publisher(Float32, 'talosbot1/temperature/left_driver_temp', 10)
@@ -86,19 +90,35 @@ class DriveModbus(Node):
         # Bus Voltage Publisher
         left_voltage = float(self.left_driver_.get_voltage())
         right_voltage = float(self.right_driver_.get_voltage())
-        msg_.data = (left_voltage + right_voltage) / 2
+        bus_voltage = float((left_voltage + right_voltage) / 2)
+        msg_.data = bus_voltage
         self.voltage_pub_.publish(msg_)
 
-        msg_.data = float(self.left_driver_.get_driver_temp())
+        left_motor_temp = float(self.left_driver_.get_driver_temp())
+        msg_.data = left_motor_temp
         self.left_motor_temp_pub_.publish(msg_)        
-        msg_.data = float(self.left_driver_.get_motor_temp())
+        left_driver_temp = float(self.left_driver_.get_motor_temp())
+        msg_.data = left_driver_temp
         self.left_driver_temp_pub_.publish(msg_)
-        msg_.data = float(self.right_driver_.get_driver_temp())
+        right_motor_temp = float(self.right_driver_.get_driver_temp())
+        msg_.data = right_motor_temp
         self.right_motor_temp_pub_.publish(msg_)
-        msg_.data = float(self.right_driver_.get_motor_temp())
+        right_driver_temp = float(self.right_driver_.get_motor_temp())
+        msg_.data = right_driver_temp
         self.right_driver_temp_pub_.publish(msg_)
-        
 
+        data = {
+            "bus_voltage" : bus_voltage,
+            "left_driver_temperature" : left_driver_temp,
+            "left_motor_temperature" : left_motor_temp,
+            "right_driver_temperature" : right_driver_temp,
+            "right_motor_temperature" : right_motor_temp
+        }
+        
+        try:
+            res = requests.post(STATISTICS_API_ENDPOINT, json=data)
+        except:
+            res = 0
 
     def timer_callback(self):
         # Check timeout
