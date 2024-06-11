@@ -35,7 +35,7 @@ class DriveModbus(Node):
         self.prev_twist_t_ = time.time()
 
         # timer to publish and send velocity command
-        self.timer_ = self.create_timer(0.33, self.timer_callback)
+        self.timer_ = self.create_timer(0.04, self.timer_callback)
 
         # timer to publish statistics data
         self.timer_ = self.create_timer(90, self.statistics_callback)
