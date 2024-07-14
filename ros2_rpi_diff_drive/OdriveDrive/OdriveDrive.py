@@ -14,5 +14,5 @@ class OdriveDrive():
         self.odrv0_.axis1.controller.input_vel= axis1 / 60
     
     def get_velocity(self):
-        return [self.odrv0_.axis0.encoder.vel_estimate, self.odrv0_.axis1.encoder.vel_estimate]
+        return [60 * self.odrv0_.axis0.encoder.vel_estimate, 60 * self.odrv0_.axis1.encoder.vel_estimate]
 

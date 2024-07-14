@@ -18,7 +18,7 @@ class DriveOdrive(Node):
         self.driver_.set_velocity(0, 0)
 
         # Initiate Kinematis
-        self.kinematics_ = DiffDriveKinematics(0.099, 0.22)
+        self.kinematics_ = DiffDriveKinematics(0.0899, 0.22)
 
         # cmd vel subscriber & callback
         self.twist_sub_ = self.create_subscription(Twist, 'cmd_vel', self.twist_callback, 10)
@@ -26,7 +26,7 @@ class DriveOdrive(Node):
         self.prev_twist_t_ = time.time()
 
         # timer to publish and send velocity command
-        self.timer_period_ = 0.33
+        self.timer_period_ = 0.033
         self.timer_ = self.create_timer(self.timer_period_, self.timer_callback)
 
         # Odometry publisher
@@ -49,12 +49,12 @@ class DriveOdrive(Node):
 
         # Send Velocity to Motors
         left_rpm = self.kinematics_.get_left_speed(self.target_vel_[0], self.target_vel_[1])
-        right_rpm = self.kinematics_.get_right_speed(self.target_vel_[0], self.target_vel_[1])
+        right_rpm = -self.kinematics_.get_right_speed(self.target_vel_[0], self.target_vel_[1])
         self.driver_.set_velocity(left_rpm, right_rpm)
         
         # Get Velocity data from Motors
         [left_rpm_act, right_rpm_act] = self.driver_.get_velocity()
-
+        right_rpm_act *= -1
         ts = Clock().now()
         self.odom_msg_.header.stamp = ts.to_msg()
 
